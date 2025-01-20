@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mazzo di carte</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #1a1a1a;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            background-color: #333;
+            padding: 20px;
+        }
+        header img {
+            max-width: 100px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #292929;
+            border: 2px solid #444;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        h1 {
+            color: white;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+            width: 100px;
+            text-align: center;
+            border: 2px solid #f39c12;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #f39c12;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #c77f0c;
+        }
+        .output {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Stili per la carta */
+        .card-container {
+            perspective: 1000px;
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .card {
+            width: 300px;
+            height: 450px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+        }
+
+        /* Front of the card with background image */
+        .card-front {
+            background-image: url('retro_carta.jpg'); /* Sostituisci con il tuo URL immagine */
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Back of the card with phrase */
+        .card-back {
+            background-color: #f39c12;
+            color: black;
+            transform: rotateY(180deg);
+            border: 2px solid #444;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+        }
+
+        .card-back h2 {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2rem;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="logo.png" alt="Lying Cards Logo">
+    </header>
+    <br>
+    <div class="container">
+        <h1>Inserisci la carta pescata</h1>
+        <input type="number" id="numberInput" min="1" max="100" placeholder="1-100">
+        <button id="showPhraseBtn">Mostra carta</button>
+        <div class="output" id="output"></div>
+    </div>
+
+    <!-- Carta che gira -->
+    <div class="card-container">
+        <div class="card" onclick="flipCard()">
+            <div class="card-face card-front"></div>
+            <div class="card-face card-back">
+                <h2 id="cardPhrase">Inserisci il numero della carta pescata</h2>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const frasi = [
+            "Se un giocatore parla di alcool",
+            "Se un giocatore parla di qualcuno che non è presente al momento",
+            "Se un giocatore è la prima persona che mangia",
+            "Se un giocatore va in bagno",
+            "Se un giocatore sbadiglia",
+            "Se un giocatore parla di ragazze",
+            "Se un giocatore parla di argomenti lgbt",
+            "Se un giocatore si stufa di giocare",
+            "Se un giocatore ti chiede quante trappole ti rimangono",
+            "Se un giocatore richiede qualcosa sulle regole",
+            "Se un giocatore si isola stando al telefono",
+            "Se un giocatore risponde ad una chiamata al telefono",
+            "Se un giocatore parla di almeno un animale",
+            "Se un giocatore racconta una storia risalente ad almeno un anno prima",
+            "Se un giocatore parla di argomenti razzisti",
+            "Se un giocatore parla di lavoro",
+            "Se un giocatore fa battute a sfondo sessuale",
+            "Se un giocatore bestemmia",
+            "Se un giocatore chiama qualcun altro con il nome per intero o per cognome",
+            "Se un giocatore si mette a cantare o canticchiare",
+            "Se un giocatore ti fa vedere un meme",
+            "Se un giocatore ti fa vedere un reel su instagram",
+            "Se un giocatore parla di soldi",
+            "Se un giocatore parla di business",
+            "Se un giocatore parla di qualche viaggio",
+            "Se un giocatore parla dell'università",
+            "Se un giocatore dice 'per favore'",
+            "Prova a farti battere il 5 da qualcuno",
+            "Dì 'ciao' a qualcuno e fatti rispondere 'ciao'",
+            "Se un giocatore beve dell'alcool",
+            "Offri da bere a qualcuno, se si rifiuta di bere hai vinto",
+            "Lancia qualcosa a qualcuno, se la prende hai vinto",
+            "Lancia qualcosa a qualcuno, se non la prende e cade hai vinto",
+            "Devi dire 10 volte la parola 'Ornitorinco' in una storia, se ci riesci e nessuno chiede nulla hai vinto",
+            "Proponi una cena in qualche ristorante diverso dal solito e cerca di convincere tutti ad andarci",
+            "Proponi di giocare a minecraft, se gli altri accettano hai vinto",
+            "Se un giocatore ride per più di 10 secondi",
+            "Se un giocatore dice una parolaccia",
+            "Se un giocatore guarda l'orologio",
+            "Se un giocatore si lamenta che è tardi",
+            "Se un giocatore non finisce il pasto/piatto",
+            "Se un giocatore parla in una lingua straniera",
+            "Se un giocatore si rifiuta di rispondere ad una tua domanda",
+            "Se un giocatore dice 'Che schifo'",
+            "Se un giocatore prova ad indovinare una tua carta trappola",
+            "Se un giocatore fa un doppio senso",
+            "Se un giocatore parla di politica",
+            "Se un giocatore interrompe un altro mentre sta parlando",
+            "Se un giocatore ripete la stessa frase o parola due volte di fila",
+            "Se qualcuno cambia improvvisamente il tema della conversazione",
+            "Se cade un silenzio imbarazzante durante la serata",
+            "Se un giocatore si lamenta di avere fame o sete",
+            "Se un giocatore gesticola in maniera evidente",
+            "Se un giocatore dice qualcosa che contraddice ciò che ha detto poco prima",
+            "Se qualcuno racconta una storia già raccontata altre volte",
+            "Se un giocatore dimentica dove ha messo un oggetto",
+            "Se qualcuno lascia una porta o un cassetto aperto",
+            "Se il telefono di un giocatore emette un suono(notifica, chiamata ecc)",
+            "Se qualcuno si muove su una sedia che cigola o fa rumore",
+            "Se un giocatore racconta una storia che sembra non finire mai",
+            "Se qualcuno prende il telefono per cercare qualcosa su google",
+            "Se un giocatore beve qualcosa mentre qualcun altro gli sta parlando",
+            "Se un giocatore fa una battuta che non fa ridere nessuno",
+            "Se qualcuno chiede che ore sono",
+            "Se un giocatore dimentica qualcosa che è già stata detta durante la serata",
+            "Se un giocatore parla a un volume esagerato rispetto agli altri",
+            "Se un giocatore dà un'opinione su qualcosa senza che gli venga chiesto",
+            "Se un giocatore chiede l'aiuto di qualcun altro per risolvere un problema",
+            "Se un giocatore dimentica il nome di un film, una canzone o una persona",
+            "Se un giocatore non crede a una storia che gli viene raccontata",
+            "Se un giocatore si distrae completamente mentre qualcuno sta parlando",
+            "Se un giocatore inizia a raccontare qualcosa e viene interrotto",
+            "Se un giocatore non partecipa alla conversazione per più di 5 minuti",
+            "Se un giocatore commenta negativamente il cibo o la bevanda",
+            "Se un giocatore propone di giocare ad un altro gioco",
+            "Se un altro giocatore ti contraddice",
+            "Se un altro giocatore nomina Trump",
+            "Se un giocatore si lamenta di una carta trappola",
+            "Se un giocatore contesta la carta trappola appena attivata",
+            "Se un giocatore esce dal luogo in cui ci si trova(andando all'esterno)",
+            "Se un giocatore parla di altre religioni/altri paesi",
+            "Se un giocatore si altera per qualcosa",
+            "Se un giocatore viene beccato a mentire",
+            "Se un giocatore inizia a dire scemenze",
+            "Se un giocatore chiede di chiudere una porta",
+            "Se un giocatore inventa una scusa palesemente assurda o improbabile",
+            "Se qualcuno interrompe un altro giocatore per dire qualcosa di meno importante",
+            "Se un giocatore chiede gli venga passato qualcosa",
+            "Se un giocatore fa una domanda di cui sa già la risposta",
+            "Se un giocatore ammette di non aver letto/guardato qualcosa che gli è stato mandato",
+            "Se un giocatore inventa una giustificazione apparentemente impeccabile per non fare qualcosa",
+            "Sfida qualcuno a braccio di ferro e lascialo vincere di proposito",
+            "Se un giocatore sfida qualcuno a braccio di ferro e perde di proposito",
+            "Se un giocatore si lamenta che ha freddo",
+            "Se un giocatore si lamenta che ha caldo",
+            "Se un giocatore parla di una crush o fidanzata",
+            "Se qualcuno parla di bambini",
+            "Se qualcuno dice 'Se fa nel tempo' o 'Sperando che non piova'",
+            "Se un giocatore ti chiede scusa",
+            "Se qualcuno schiocca qualche osso del corpo"
+        ];
+
+        const input = document.getElementById("numberInput");
+        const button = document.getElementById("showPhraseBtn");
+        const cardPhrase = document.getElementById("cardPhrase");
+
+        button.addEventListener("click", () => {
+            const numero = parseInt(input.value, 10);
+            if (isNaN(numero) || numero < 1 || numero > 100) {
+                alert("Inserisci un numero valido tra 1 e 100.");
+            } else {
+                // Update the card's back with the corresponding phrase
+                cardPhrase.textContent = frasi[numero - 1];
+                // Flip the card automatically after showing the phrase
+                flipCard();
+            }
+        });
+
+        // Function to flip the card
+        function flipCard() {
+            document.querySelector(".card").classList.toggle("is-flipped");
+        }
+    </script>
+</body>
+</html>
